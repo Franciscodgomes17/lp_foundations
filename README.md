@@ -1,4 +1,4 @@
-Assignemnt 1: [![ci](https://github.com/Franciscodgomes17/lp_foundations/actions/workflows/ci.yml/badge.svg)](https://github.com/Franciscodgomes17/lp_foundations/actions/workflows/main.yml)
+Assignemnt 1: [![main](https://github.com/Franciscodgomes17/lp_foundations/actions/workflows/ci.yml/badge.svg)](https://github.com/Franciscodgomes17/lp_foundations/actions/workflows/main.yml)
 
 # Foundations Learning Path
 
