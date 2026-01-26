@@ -10,25 +10,28 @@ jobs:
   tests-and-lint:
     runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v4
+    defaults:
+      run:
+        working-directory: assignments
 
-      - uses: actions/setup-python@v5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: install deps
-        working-directory: assignments
+      - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
+          python -m pip install --upgrade pip setuptools
           python -m pip install -e ".[dev]"
 
-      - name: run tests
-        working-directory: assignments
+      - name: Run tests
         run: |
           python -m pytest life_expectancy --cov
 
-      - name: run pylint
-        working-directory: assignments
+      - name: Run pylint
         run: |
           pylint life_expectancy.cleaning
