@@ -8,15 +8,19 @@ from typing import Optional
 
 import pandas as pd
 
+
 @dataclass(frozen=True)
 class Paths:
     """Default input/output locations relative to this module."""
+
     data_dir: Path = Path(__file__).resolve().parent / "data"
     input_file: Path = data_dir / "eu_life_expectancy_raw.tsv"
     output_file: Path = data_dir / "pt_life_expectancy.csv"
 
+
 class Cols:
     """Column name constants."""
+
     METADATA = "metadata"
     UNIT = "unit"
     SEX = "sex"
@@ -27,17 +31,20 @@ class Cols:
 
     ID_COLS = [UNIT, SEX, AGE, REGION]
 
-def load_data(input_path: Path = Paths.input_file) -> pd.DataFrame:
+
+def load_data(input_path: Optional[Path] = None) -> pd.DataFrame:
     """
     Load raw EU life expectancy dataset from a TSV file.
     """
     input_path = input_path or Paths.input_file
-    
+
     if not input_path.exists():
         raise FileNotFoundError(f"Input file not found: {input_path}")
+
     return pd.read_csv(input_path, sep="\t")
 
-def clean_data(df: pd.DataFrame, country: str = "PT") -> pd.DataFrame:
+
+def clean_df(df: pd.DataFrame, country: str = "PT") -> pd.DataFrame:
     """
     Pure transformation:
     - Rename first column to METADATA
@@ -63,10 +70,8 @@ def clean_data(df: pd.DataFrame, country: str = "PT") -> pd.DataFrame:
         value_name=Cols.VALUE,
     )
 
-    # Year: strip spaces then int
     long_df[Cols.YEAR] = long_df[Cols.YEAR].astype(str).str.strip().astype(int)
 
-    # Value: ":" means missing; remove stray non-numeric chars (e.g., flags)
     cleaned_value = (
         long_df[Cols.VALUE]
         .astype(str)
@@ -80,21 +85,32 @@ def clean_data(df: pd.DataFrame, country: str = "PT") -> pd.DataFrame:
     return result
 
 
-def save_data(df: pd.DataFrame, output_path: Path = Paths.output_file) -> None:
+def save_data(df: pd.DataFrame, output_path: Optional[Path] = None) -> None:
     """
     Save cleaned dataset to CSV.
     """
+    output_path = output_path or Paths.output_file
     output_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(output_path, index=False)
 
 
-def main(country: str = "PT") -> None:
+def clean_data(country: str = "PT") -> None:
     """
-    Orchestrates the full pipeline: load -> clean -> save.
+    I/O wrapper kept for backward compatibility with the previous lesson/tests:
+    - Load raw data
+    - Clean it using the pure transformer
+    - Save to disk
     """
     raw = load_data()
-    cleaned = clean_data(raw, country=country)
+    cleaned = clean_df(raw, country=country)
     save_data(cleaned)
+
+
+def main(country: str = "PT") -> None:
+    """
+    Orchestrates the full pipeline.
+    """
+    clean_data(country=country)
 
 
 if __name__ == "__main__":  # pragma: no cover
