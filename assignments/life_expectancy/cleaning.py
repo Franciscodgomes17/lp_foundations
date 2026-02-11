@@ -8,7 +8,7 @@ from typing import Optional
 
 import pandas as pd
 
-
+# pylint: disable=too-few-public-methods
 @dataclass(frozen=True)
 class Paths:
     """Default input/output locations relative to this module."""
@@ -17,7 +17,7 @@ class Paths:
     input_file: Path = data_dir / "eu_life_expectancy_raw.tsv"
     output_file: Path = data_dir / "pt_life_expectancy.csv"
 
-
+# pylint: disable=too-few-public-methods
 class Cols:
     """Column name constants."""
 
