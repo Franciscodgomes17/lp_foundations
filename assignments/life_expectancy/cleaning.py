@@ -1,80 +1,117 @@
 """Data cleaning utilities for EU life expectancy dataset."""
 
-# pylint: disable=invalid-name
-
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Optional
+
 import pandas as pd
 
+# pylint: disable=too-few-public-methods
+@dataclass(frozen=True)
+class Paths:
+    """Default input/output locations relative to this module."""
 
-# --- file locations
-data_dir = Path(__file__).resolve().parent / "data"
-input_file = data_dir / "eu_life_expectancy_raw.tsv"
-output_file = data_dir / "pt_life_expectancy.csv"
+    data_dir: Path = Path(__file__).resolve().parent / "data"
+    input_file: Path = data_dir / "eu_life_expectancy_raw.tsv"
+    output_file: Path = data_dir / "pt_life_expectancy.csv"
+
+# pylint: disable=too-few-public-methods
+class Cols:
+    """Column name constants."""
+
+    METADATA = "metadata"
+    UNIT = "unit"
+    SEX = "sex"
+    AGE = "age"
+    REGION = "region"
+    YEAR = "year"
+    VALUE = "value"
+
+    ID_COLS = [UNIT, SEX, AGE, REGION]
 
 
-col_metadata = "metadata"
-col_unit = "unit"
-col_sex = "sex"
-col_age = "age"
-col_region = "region"
-col_year = "year"
-col_value = "value"
+def load_data(input_path: Optional[Path] = None) -> pd.DataFrame:
+    """
+    Load raw EU life expectancy dataset from a TSV file.
+    """
+    input_path = input_path or Paths.input_file
 
-id_cols = [col_unit, col_sex, col_age, col_region]
+    if not input_path.exists():
+        raise FileNotFoundError(f"Input file not found: {input_path}")
+
+    return pd.read_csv(input_path, sep="\t")
 
 
-def transform_life_expectancy(df: pd.DataFrame, country: str) -> pd.DataFrame:
+def clean_df(df: pd.DataFrame, country: str = "PT") -> pd.DataFrame:
     """
     Pure transformation:
-    - Split metadata column into unit/sex/age/region
+    - Rename first column to METADATA
+    - Split metadata into unit/sex/age/region
     - Unpivot wide -> long
     - Clean year/value
     - Filter by country and drop NaNs
     """
+    if df.empty:
+        return df.copy()
+
     first_col = df.columns[0]
-    df = df.rename(columns={first_col: col_metadata})
+    df_renamed = df.rename(columns={first_col: Cols.METADATA})
 
-    meta = df[col_metadata].str.split(",", expand=True)
-    meta.columns = id_cols
+    meta = df_renamed[Cols.METADATA].astype(str).str.split(",", expand=True)
+    meta.columns = Cols.ID_COLS
 
-    df = pd.concat([meta, df.drop(columns=[col_metadata])], axis=1)
+    wide = pd.concat([meta, df_renamed.drop(columns=[Cols.METADATA])], axis=1)
 
-    df_long = df.melt(
-        id_vars=id_cols,
-        var_name=col_year,
-        value_name=col_value,
+    long_df = wide.melt(
+        id_vars=Cols.ID_COLS,
+        var_name=Cols.YEAR,
+        value_name=Cols.VALUE,
     )
 
-    df_long[col_year] = df_long[col_year].astype(str).str.strip().astype(int)
+    long_df[Cols.YEAR] = long_df[Cols.YEAR].astype(str).str.strip().astype(int)
 
     cleaned_value = (
-        df_long[col_value]
+        long_df[Cols.VALUE]
         .astype(str)
         .str.strip()
         .replace({":": ""})
-        .str.replace(r"[^\d\.\-]", "", regex=True)
+        .str.replace(r"[^\d.\-]", "", regex=True)
     )
-    df_long[col_value] = pd.to_numeric(cleaned_value, errors="coerce")
+    long_df[Cols.VALUE] = pd.to_numeric(cleaned_value, errors="coerce")
 
-    df_long = df_long[df_long[col_region] == country].dropna(subset=[col_value])
+    result = long_df[long_df[Cols.REGION] == country].dropna(subset=[Cols.VALUE])
+    return result
 
-    return df_long
+
+def save_data(df: pd.DataFrame, output_path: Optional[Path] = None) -> None:
+    """
+    Save cleaned dataset to CSV.
+    """
+    output_path = output_path or Paths.output_file
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(output_path, index=False)
 
 
 def clean_data(country: str = "PT") -> None:
     """
-    I/O wrapper:
-    - Reads raw TSV from disk
-    - Applies transformation
-    - Writes CSV to disk
+    I/O wrapper kept for backward compatibility with the previous lesson/tests:
+    - Load raw data
+    - Clean it using the pure transformer
+    - Save to disk
     """
-    df = pd.read_csv(input_file, sep="\t")
-    result = transform_life_expectancy(df, country=country)
-    result.to_csv(output_file, index=False)
+    raw = load_data()
+    cleaned = clean_df(raw, country=country)
+    save_data(cleaned)
 
 
-if __name__=="__main__": # pragma: no cover
+def main(country: str = "PT") -> None:
+    """
+    Orchestrates the full pipeline.
+    """
+    clean_data(country=country)
 
-    clean_data()
+
+if __name__ == "__main__":  # pragma: no cover
+    main()
