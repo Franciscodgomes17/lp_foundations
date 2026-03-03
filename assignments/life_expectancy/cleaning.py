@@ -81,4 +81,3 @@ def main(country: str = "PT") -> pd.DataFrame:
     return cleaned
 if __name__ == "__main__":  # pragma: no cover
     main()
-    
