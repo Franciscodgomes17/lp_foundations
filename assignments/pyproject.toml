@@ -30,7 +30,8 @@ packages = ["life_expectancy"]
 [tool.coverage.run]
 omit = [
   "*/conftest.py",
-  "*/test*"
+  "*/test*",
+  "*/make_fixtures.py"
 ]
 
 [tool.coverage.report]
