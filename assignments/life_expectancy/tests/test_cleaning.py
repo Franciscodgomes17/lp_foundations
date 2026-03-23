@@ -1,7 +1,7 @@
 """Tests for the cleaning module."""
 import pandas as pd
 from pandas.testing import assert_frame_equal
-from life_expectancy.cleaning import clean_df
+from life_expectancy.cleaning import Region, clean_df
 def test_clean_df_matches_expected_fixture(
     eu_life_expectancy_raw_sample: pd.DataFrame,
     pt_life_expectancy_expected: pd.DataFrame,
@@ -10,7 +10,7 @@ def test_clean_df_matches_expected_fixture(
     Clean the sample raw fixture and compare the resulting DataFrame
     to the expected PT fixture.
     """
-    result = clean_df(eu_life_expectancy_raw_sample, country="PT")
+    result = clean_df(eu_life_expectancy_raw_sample, region=Region.PT)
     assert_frame_equal(
         result.reset_index(drop=True),
         pt_life_expectancy_expected.reset_index(drop=True),
