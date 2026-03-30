@@ -1,0 +1,32 @@
+[
+  {
+    "unit": "YR",
+    "sex": "F",
+    "age": "Y1",
+    "country": "PT",
+    "year": 2020,
+    "life_expectancy": 83.3,
+    "flag": "",
+    "flag_detail": ""
+  },
+  {
+    "unit": "YR",
+    "sex": "F",
+    "age": "Y2",
+    "country": "PT",
+    "year": 2020,
+    "life_expectancy": 82.3,
+    "flag": "",
+    "flag_detail": ""
+  },
+  {
+    "unit": "YR",
+    "sex": "F",
+    "age": "Y1",
+    "country": "BG",
+    "year": 2020,
+    "life_expectancy": 76.9,
+    "flag": "",
+    "flag_detail": ""
+  }
+]

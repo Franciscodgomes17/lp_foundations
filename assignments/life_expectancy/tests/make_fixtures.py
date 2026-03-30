@@ -7,7 +7,7 @@ This script:
 """
 from pathlib import Path
 import pandas as pd
-from life_expectancy.cleaning import Region, clean_df
+from life_expectancy.cleaning import Region, clean_df, load_data
 def main() -> None:
     """Generate sample input and expected output fixtures."""
     root = Path(__file__).resolve().parents[1]
@@ -25,7 +25,7 @@ def main() -> None:
     sample_path = fixtures / "eu_life_expectancy_raw.tsv"
     sample.to_csv(sample_path, sep="\t", index=False)
     print(f"Wrote sample raw fixture: {sample_path}")
-    sample_loaded = pd.read_csv(sample_path, sep="\t")
+    sample_loaded = load_data(sample_path)
     expected_pt = clean_df(sample_loaded, region=Region.PT)
     expected_pt_path = fixtures / "pt_life_expectancy_expected.csv"
     expected_pt.to_csv(expected_pt_path, index=False)
